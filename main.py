@@ -31,7 +31,7 @@ def extract_itineraries(flight_groups: list) -> list:
         arrival_airport = last_segment.get("arrival_airport", {}).get("id", "")
         arrival_time = last_segment.get("arrival_airport", {}).get("time", "")
         
-        # 6. 計算轉機次數 (幫助你過濾太折騰的航班)
+        # 6. 計算轉機次數
         layovers = len(segments) - 1
         
         result.append({
@@ -85,22 +85,22 @@ def search_flights(
     all_flights.extend(extract_itineraries(best_flights))
     all_flights.extend(extract_itineraries(other_flights))
 
-    # 濾除沒有正確抓到價格的航班 (價格為 inf 的)
-    valid_flights = [f for f in all_flights if f["price"] != float('inf')]
+    # --- 修改重點開始 ---
+    # 濾除沒有正確抓到價格的航班，並且「只保留直飛航班 (layovers == 0)」
+    valid_flights = [f for f in all_flights if f["price"] != float('inf') and f["layovers"] == 0]
+    # --- 修改重點結束 ---
 
     # 依照價格排序，取得前三便宜的機票
     valid_flights.sort(key=lambda x: x["price"])
     cheapest_3 = valid_flights[:3]
 
-    # --- 修復重點開始 ---
-    # 1. 動態組合一個絕對有效的官方 Google Flights 搜尋網址作為備案
+    # 動態組合一個絕對有效的官方 Google Flights 搜尋網址作為備案
     fallback_url = f"https://www.google.com/travel/flights?q=Flights%20from%20{departure_id}%20to%20{arrival_id}%20on%20{outbound_date}%20through%20{return_date}"
     
-    # 2. 嘗試從 SerpApi 抓取，如果沒抓到或是抓到預設的無效網址，就強制換成我們自己組合的
+    # 嘗試從 SerpApi 抓取，如果沒抓到或是抓到預設的無效網址，就強制換成我們自己組合的
     google_flights_link = data.get("search_metadata", {}).get("google_flights_url")
     if not google_flights_link or "googleusercontent.com" in google_flights_link:
         google_flights_link = fallback_url
-    # --- 修復重點結束 ---
 
     return {
         "flights": cheapest_3,
