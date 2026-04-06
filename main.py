@@ -92,7 +92,13 @@ def search_flights(
     valid_flights.sort(key=lambda x: x["price"])
     cheapest_3 = valid_flights[:3]
 
-    return cheapest_3
+    # 取出 Google Flights 原始搜尋連結
+    google_flights_link = data.get("search_link", "")
+
+    return {
+        "flights": cheapest_3,
+        "google_flights_link": google_flights_link
+    }
 
 @app.get("/health")
 def health_check():
