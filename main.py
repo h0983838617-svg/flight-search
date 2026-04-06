@@ -92,8 +92,8 @@ def search_flights(
     valid_flights.sort(key=lambda x: x["price"])
     cheapest_3 = valid_flights[:3]
 
-    # 取出 Google Flights 原始搜尋連結
-    google_flights_link = data.get("search_link", "")
+    # 取出 Google Flights 原始搜尋連結 (修改這裡)
+    google_flights_link = data.get("search_metadata", {}).get("google_flights_url", "https://www.google.com/travel/flights")
 
     return {
         "flights": cheapest_3,
